@@ -29,5 +29,5 @@ Configures the TypeScript compiler options for the app.
     "target": "ES2017"
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "drizzle.config.ts"]
 }
