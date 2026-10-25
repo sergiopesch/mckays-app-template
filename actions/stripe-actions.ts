@@ -4,10 +4,12 @@ Contains server actions related to Stripe.
 </ai_context>
 */
 
+import "server-only"
+
 import {
   updateProfileAction,
   updateProfileByStripeCustomerIdAction
-} from "@/actions/db/profiles-actions"
+} from "@/lib/server/profile-billing"
 import { SelectProfile } from "@/db/schema"
 import { stripe } from "@/lib/stripe"
 import Stripe from "stripe"
