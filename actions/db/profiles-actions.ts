@@ -7,6 +7,7 @@ Contains server actions related to profiles in the DB.
 "use server"
 
 import { db } from "@/db/db"
+import { auth } from "@clerk/nextjs/server"
 import {
   InsertProfile,
   profilesTable,
@@ -16,10 +17,15 @@ import { ActionState } from "@/types"
 import { eq } from "drizzle-orm"
 
 export async function createProfileAction(
-  data: InsertProfile
+  data: Pick<InsertProfile, "userId">
 ): Promise<ActionState<SelectProfile>> {
   try {
-    const [newProfile] = await db.insert(profilesTable).values(data).returning()
+    const { userId } = await auth()
+    if (!userId || data.userId !== userId || Object.keys(data).some((key) => key !== "userId")) {
+      return { isSuccess: false, message: "Unauthorized profile creation" }
+    }
+
+    const [newProfile] = await db.insert(profilesTable).values({ userId }).returning()
     return {
       isSuccess: true,
       message: "Profile created successfully",
@@ -35,6 +41,11 @@ export async function getProfileByUserIdAction(
   userId: string
 ): Promise<ActionState<SelectProfile>> {
   try {
+    const actor = await auth()
+    if (!actor.userId || actor.userId !== userId) {
+      return { isSuccess: false, message: "Unauthorized" }
+    }
+
     const profile = await db.query.profiles.findFirst({
       where: eq(profilesTable.userId, userId)
     })
@@ -53,68 +64,15 @@ export async function getProfileByUserIdAction(
   }
 }
 
-export async function updateProfileAction(
-  userId: string,
-  data: Partial<InsertProfile>
-): Promise<ActionState<SelectProfile>> {
-  try {
-    const [updatedProfile] = await db
-      .update(profilesTable)
-      .set(data)
-      .where(eq(profilesTable.userId, userId))
-      .returning()
-
-    if (!updatedProfile) {
-      return { isSuccess: false, message: "Profile not found to update" }
-    }
-
-    return {
-      isSuccess: true,
-      message: "Profile updated successfully",
-      data: updatedProfile
-    }
-  } catch (error) {
-    console.error("Error updating profile:", error)
-    return { isSuccess: false, message: "Failed to update profile" }
-  }
-}
-
-export async function updateProfileByStripeCustomerIdAction(
-  stripeCustomerId: string,
-  data: Partial<InsertProfile>
-): Promise<ActionState<SelectProfile>> {
-  try {
-    const [updatedProfile] = await db
-      .update(profilesTable)
-      .set(data)
-      .where(eq(profilesTable.stripeCustomerId, stripeCustomerId))
-      .returning()
-
-    if (!updatedProfile) {
-      return {
-        isSuccess: false,
-        message: "Profile not found by Stripe customer ID"
-      }
-    }
-
-    return {
-      isSuccess: true,
-      message: "Profile updated by Stripe customer ID successfully",
-      data: updatedProfile
-    }
-  } catch (error) {
-    console.error("Error updating profile by stripe customer ID:", error)
-    return {
-      isSuccess: false,
-      message: "Failed to update profile by Stripe customer ID"
-    }
-  }
-}
-
 export async function deleteProfileAction(
   userId: string
 ): Promise<ActionState<void>> {
   try {
+    const actor = await auth()
+    if (!actor.userId || actor.userId !== userId) {
+      return { isSuccess: false, message: "Unauthorized" }
+    }
+
     await db.delete(profilesTable).where(eq(profilesTable.userId, userId))
     return {
       isSuccess: true,

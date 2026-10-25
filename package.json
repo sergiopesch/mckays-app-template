@@ -15,7 +15,8 @@
     "analyze": "ANALYZE=true npm run build",
     "db:generate": "echo 'drizzle-kit removed during security remediation'",
     "db:migrate": "echo 'drizzle-kit removed during security remediation'",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "test:authorization": "node --experimental-vm-modules --test tests/server-action-authorization.test.mjs"
   },
   "dependencies": {
     "@clerk/backend": "^1.20.1",
@@ -58,7 +59,7 @@
     "framer-motion": "^11.11.8",
     "input-otp": "^1.4.1",
     "lucide-react": "^0.436.0",
-    "next": "^15.0.3",
+    "next": "15.5.28",
     "next-themes": "^0.3.0",
     "postgres": "^3.4.4",
     "posthog-js": "^1.201.0",
@@ -86,7 +87,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.6",
-    "postcss": "^8",
+    "postcss": "^8.5.24",
     "prettier": "^3.3.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
